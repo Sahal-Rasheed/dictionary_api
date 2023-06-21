@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework import status
@@ -10,17 +8,19 @@ from .serializers import DictionarySerializer
 
 
 class DictionaryView(ViewSet):
+    # Method to handle POST requests
     def create(self,request,*args,**kwargs):
         serializer = DictionarySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)  
-        else:
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
         
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        
+    # Method to handle GET requests    
     def list(self,request,*args,**kwargs):
-        query = request.query_params.get("search")
-        if query == "" or query == None:
+        query = request.query_params.get("search","")
+        if not query:
             words = Dictionary.objects.all()
         else:
             words = Dictionary.objects.filter(label__icontains=query)
@@ -30,6 +30,7 @@ class DictionaryView(ViewSet):
         serializer = DictionarySerializer(words,many=True) 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
     
+    # Method to handle PUT requests
     def update(self,request,*args,**kwargs):
         id = kwargs.get("pk")
         word = Dictionary.objects.get(id=id)
@@ -37,9 +38,10 @@ class DictionaryView(ViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_200_OK)  
-        else:
-            return Response(data=serializer.errors, status=status.HTTP_404_NOT_FOUND)              
+        
+        return Response(data=serializer.errors, status=status.HTTP_404_NOT_FOUND)              
 
+    # Method to handle DELETE requests
     def destroy(self,request,*args,**kwargs):
         id = kwargs.get("pk")
         word = Dictionary.objects.get(id=id)
